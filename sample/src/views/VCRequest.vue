@@ -28,7 +28,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import Textarea from 'primevue/textarea';
-import { getAll } from '@/utils/indexedDB';
+import { getAlldid } from '@/utils/indexedDB';
 import GenQRcode from '@/components/GenQRcode.vue';
 
 const value = ref('');
@@ -37,7 +37,7 @@ const dids = ref([]);
 const credential = ref('');
 
 onMounted(async () => {
-    dids.value = await getAll()
+    dids.value = await getAlldid()
     console.log(dids.value)
 });
 

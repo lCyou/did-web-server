@@ -3,10 +3,10 @@
     <h1 class="text-2xl font-bold mb-6">My Wallet</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <CardItem
-        v-for="card in cards"
-        :key="card.id"
-        :card="card"
-        @click="handleCardClick(card)"
+        v-for="credential in credentials"
+        :key="credential.id"
+        :card="credential"
+        @click="handleCardClick(credential)"
       />
     </div>
     <CardModal v-if="isModalOpen" :card="selectedCard" @close="handleCloseModal" />
@@ -14,21 +14,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import CardItem from '@/components/CardItem.vue';
 import CardModal from '@/components/CardModal.vue';
+import { dbReady, getAllVCs } from '@/utils/vc';
 
-const cards = [
-  { id: 1, last4: 'address', manufacturer: 'did:web:did.lcyou.org:did:user:91fdcf89-2271-4cf9-9764-6383728494a2#owner', expiryDate: '12/24', cardHolder: 'John Doe' },
-  { id: 2, last4: 'tell', manufacturer: 'did:web:did.lcyou.org#owner', expiryDate: '06/25', cardHolder: 'lcyou' },
-  
-];
+const credentials = ref([]);
+
+onMounted(async () => {
+  await dbReady; // データベースの初期化が完了するまで待機
+  credentials.value = await getAllVCs();
+});
 
 const selectedCard = ref(null);
 const isModalOpen = ref(false);
 
-const handleCardClick = (card) => {
-  selectedCard.value = card;
+const handleCardClick = (credential) => {
+  selectedCard.value = credential;
   isModalOpen.value = true;
 };
 
