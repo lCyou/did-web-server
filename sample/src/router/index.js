@@ -3,7 +3,7 @@ import { getDid } from '../utils/indexedDB'
 
 const routes = [
   {
-    path: '/wallet/',
+    path: '/',
     name: 'default',
     component: () => import('@/views/Default.vue'),
   },
