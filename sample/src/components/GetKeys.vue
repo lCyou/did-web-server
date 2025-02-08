@@ -3,13 +3,20 @@ import { ref } from 'vue';
 import { KeyPairs } from '@/utils/keys';
 import crypto from 'crypto';
 import elliptic from 'elliptic';
+import { getAlldid } from '@/utils/indexedDB';
 
 var printKeys = ref("");
 var isClick = false;
 
 const initKeys = async () => {
   isClick = true;
+  const dids = await getAlldid();
+  if (dids.length > 0) {
+    printKeys.value = "🔑 Key already exists!";
+    return;
+  }
 
+  console.log("why calculate key?");
   const randomString = crypto.randomBytes(32).toString("hex");
   const pk = randomString;
 
