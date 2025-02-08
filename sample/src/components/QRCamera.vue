@@ -27,7 +27,8 @@
   </template>
   
   <script setup lang="ts">
-  import { ref, computed } from 'vue'
+  import { decodeJWT } from 'did-jwt';
+import { ref, computed } from 'vue'
   import { QrcodeStream } from 'vue-qrcode-reader'
   
   /*** detection handling ***/
@@ -36,8 +37,18 @@
   
   function onDetect(detectedCodes) {
     console.log(detectedCodes)
-    result.value = JSON.stringify(detectedCodes.map((code) => code.rawValue))
-    console.log(JSON.parse(result.value))
+    result.value = detectedCodes.map((code) => code.rawValue)
+    try {
+      //JWTの解釈を先にして保存処理
+      const log  = decodeJWT(result.value);
+      console.log(log)
+      // あとにPayloadのリクエストを捌きたいかも
+      const reqPayload = JSON.parse(result.value)
+      // verify and create VCs
+      createVC(reqPayload)
+    } catch (e) { 
+      console.error(e);
+    } 
     //modalだす，Verifyする，署名する，送り返す
     // JWTで帰ってくるのはVCのみ？JSON-LDでくるのはPayloadのみ？
   }
