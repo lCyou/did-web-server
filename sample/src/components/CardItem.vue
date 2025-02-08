@@ -1,9 +1,9 @@
 <template>
     <div class="card cursor-pointer hover:shadow-lg transition-shadow" @click="onClick">
       <div class="card-content">
-        <div>
-          <h2 class="font-semibold">{{ card.last4 }}</h2>
-          <p class="text-sm text-gray-500">{{ card.manufacturer }}</p>
+        <div class=" bg-gray-200 text-gray-600 flex items-center justify-center">
+          <h2 class="font-semibold">{{ card.payload.iss }}</h2>
+          <p class="text-sm text-gray-500" style="word-wrap: break-word;">{{ card.signature }}</p>
         </div>
       </div>
     </div>
@@ -18,6 +18,7 @@
   const emit = defineEmits(['click']);
   
   const onClick = () => emit('click', props.card);
+
   </script>
   
   <style scoped>
@@ -27,10 +28,11 @@
     margin: 5%;
   }
   .card-content {
-    display: flex;
+    /* display: ; */
     align-items: center;
     justify-content: center;
     width: 100%;
+    padding: 0 5%;
   }
   .icon {
     border-radius: 50%;

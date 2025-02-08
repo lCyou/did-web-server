@@ -1,19 +1,31 @@
 <template>
     <div class="modal-overlay" @click.self="onClose">
       <div class="modal-content">
-        <h2 class="modal-title">{{ card.last4 }}</h2>
-        <div class="modal-body">
-          <p><strong>did uri:</strong> {{ card.manufacturer }}</p>
-          <p><strong>Expiry Date:</strong> {{ card.expiryDate }}</p>
-          <p><strong>Holder:</strong> {{ card.cardHolder }}</p>
+        <div v-if="!qr">
+          <h2 class="modal-title">{{ card.payload.iss }}</h2>
+          <div class="modal-body">
+            <p><strong>Credential Sub:</strong> {{ card.payload.vc.credentialSubject }}</p>
+            <p><strong>Expiry Date:</strong> {{ card.payload.vc.validUntil ? `{card.payload.vc.validFrom} ~ {card.payload.vc.validUntil}`: 'None' }}</p>
+            <p><strong>Holder:</strong> {{ card.payload.sub || 'None' }}</p>
+          </div>
+          <button class="close-button" @click="onClose">&times;</button>
+          <button @click="send(card)">send VC</button>
         </div>
-        <button>send VPs</button>
+        <div v-if="qr" class="qrcode-container">
+          <canvas ref="canvas"></canvas>
+          <button style="margin-top: 0rem;" @click="qr = false">Close</button>
+          <button class="close-button" @click="onClose">&times;</button>
+        </div>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { defineProps, defineEmits } from 'vue';
+</template>
+
+<script setup>
+  import { defineProps, defineEmits, ref } from 'vue';
+  import QRCode from 'qrcode';
+
+  const qr = ref(false);
+  const canvas = ref(null);
   
   const props = defineProps({
     card: Object,
@@ -21,9 +33,21 @@
   const emit = defineEmits(['close']);
   
   const onClose = () => emit('close');
-  </script>
-  
-  <style scoped>
+
+  async function send(card) {
+    qr.value = true;
+    try {
+      delete card.id;
+      await QRCode.toCanvas(canvas.value, card, {
+        width: 200,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+</script>
+
+<style scoped>
   .modal-overlay {
     position: fixed;
     top: 0;
@@ -59,6 +83,20 @@
   }
   .modal-body p {
     margin: 0.5rem 0;
+  }
+
+  .qrcode-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1rem;
+  }
+
+  canvas {
+    border: 1px solid #ddd;
+    width: 400px;
+    height: 400px;
+    margin: 2rem;
   }
   </style>
   
