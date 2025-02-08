@@ -1,38 +1,3 @@
-<!-- 
-<template>
-    <div>
-      <canvas ref="qrCanvas"></canvas>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref, watch, onMounted } from "vue";
-  import QRCode from "qrcode";
-  
-  const props = defineProps({
-    text: {
-      type: String,
-      required: true,
-    },
-  });
-  
-  const qrCanvas = ref(null);
-  
-  // QRコードを生成する関数
-  const generateQR = async () => {
-    if (props.text) {
-      await QRCode.toCanvas(qrCanvas.value, props.text, {
-        width: 200, // QRコードのサイズ
-      });
-    }
-  };
-
-  watch (() => props.text, () => {
-    generateQR();
-  });
-  
-  </script>
-   -->
 
    <template>
     <div class="qrcode-container">
