@@ -1,4 +1,4 @@
-const document = window.indexedDB.open("didDocument", 1);  
+const document = window.indexedDB.open("didDocument", 1); 
 var db;
 
 document.onupgradeneeded = function(event) {
@@ -9,7 +9,6 @@ document.onupgradeneeded = function(event) {
     const keys = db.createObjectStore("keys", { autoIncrement: true });
 
     did.createIndex("uri", "uri", { unique: true });
-
     keys.createIndex("privateKey", "privateKey", { unique: true });
 };
 
@@ -23,7 +22,6 @@ document.onsuccess = function(event) {
     db = event.target.result;
     return ;
 };
-
 
 function useDatabase(db) {
     db.onversionchange = (event) => {
@@ -66,21 +64,6 @@ export function getDid() {
     };
 }
 
-// export function getAll() {
-//     const transaction = db.transaction(["dids"], "readonly");
-//     const store = transaction.objectStore("dids");
-//     const request = store.getAll();
-//     request.onsuccess = () =>{
-//         console.log(request.result);
-//         return request.result;
-//     };
-
-//     transaction.onerror = (event) => {
-//         console.error(event);
-//         return 0;
-//     };
-// }
-
 export function addKey(privateKey) {
     const transaction = db.transaction(["keys"], "readwrite");
     const store = transaction.objectStore("keys");
@@ -96,7 +79,7 @@ export function addKey(privateKey) {
     };
 }
 
-export const getAll = () => {
+export const getAlldid = () => {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction('dids', 'readonly');
         const store = transaction.objectStore('dids');
@@ -106,4 +89,3 @@ export const getAll = () => {
         request.onerror = () => reject('Failed to get data');
     });
   };
-  
