@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="!result">
       <p>
         <select v-model="selectedConstraints">
           <option
@@ -10,6 +10,9 @@
             {{ option.label }}
           </option>
         </select>
+      </p>
+      <p>
+        <SelectButton v-model="sendType" :options="sendTypeOption" />
       </p>
   
       <p class="error">{{ error }}</p>
@@ -24,33 +27,77 @@
         />
       </div>
     </div>
+
+    <div v-if="result">
+      <button class="back" type="button" @click="result = ''">← Back</button>
+      <div class="card">
+        <div class="card-title">
+          <h2>Result</h2>
+        </div>      
+        <div class="card-content">
+          <p>Issuer : {{ sub.iss }}</p>
+          <p>Subject : {{ JSON.stringify(sub.vc.credentialSubject, null, 2) }}</p>
+          <button class="button" type="button" @click="accept">Accept</button>
+        </div>
+      </div>
+    </div>
   </template>
   
-  <script setup lang="ts">
+  <script setup lang="js">
   import { decodeJWT } from 'did-jwt';
-import { ref, computed } from 'vue'
+  import { useRouter } from 'vue-router';
+  import { onBeforeUnmount, ref } from 'vue'
   import { QrcodeStream } from 'vue-qrcode-reader'
-  
-  /*** detection handling ***/
+  import SelectButton from 'primevue/selectbutton'
+  import { dbReady, addVC } from '@/utils/vc'
   
   const result = ref('')
+  const rawValue = ref('')
+  const sub = ref('')
+  const sendType = ref('VC')
+  const sendTypeOption = ['VC', 'Payload']
+  const router = useRouter()
+  let stream = null
+
+  onBeforeUnmount(() => {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+  })
+
+  async function accept() {
+    await dbReady;
+    addVC(JSON.parse(JSON.stringify(result.value)), JSON.stringify({"vcjwt":rawValue.value}))
+    router.push('/')
+  }
   
-  function onDetect(detectedCodes) {
-    console.log(detectedCodes)
-    result.value = detectedCodes.map((code) => code.rawValue)
+  async function onDetect(detectedCodes) {
+    const detectValueArray = detectedCodes.map((code) => code.rawValue)
+    const value = detectValueArray.pop()
+    if (sendType.value === 'VC') {
+      await sendVC(value)
+    } else if (sendType.value === 'Payload') {
+      await sendPayload(value)
+    }
+  }
+
+  async function sendVC(value) {
     try {
-      //JWTの解釈を先にして保存処理
-      const log  = decodeJWT(result.value);
-      console.log(log)
-      // あとにPayloadのリクエストを捌きたいかも
-      const reqPayload = JSON.parse(result.value)
-      // verify and create VCs
-      createVC(reqPayload)
-    } catch (e) { 
-      console.error(e);
-    } 
-    //modalだす，Verifyする，署名する，送り返す
-    // JWTで帰ってくるのはVCのみ？JSON-LDでくるのはPayloadのみ？
+      rawValue.value = value
+      result.value = await decodeJWT(value)
+      sub.value = result.value.payload
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  async function sendPayload(value) {
+    try {
+      result.value = JSON.parse(value)
+      console.log('catched payload:', result.value)
+    } catch (e) {
+      console.error(e)
+    }
   }
   
   /*** select camera ***/
@@ -63,10 +110,7 @@ import { ref, computed } from 'vue'
   const constraintOptions = ref(defaultConstraintOptions)
   
   async function onCameraReady() {
-    // NOTE: on iOS we can't invoke `enumerateDevices` before the user has given
-    // camera access permission. `QrcodeStream` internally takes care of
-    // requesting the permissions. The `camera-on` event should guarantee that this
-    // has happened.
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
     const devices = await navigator.mediaDevices.enumerateDevices()
     const videoDevices = devices.filter(({ kind }) => kind === 'videoinput')
   
@@ -99,36 +143,7 @@ import { ref, computed } from 'vue'
       ctx.stroke()
     }
   }
-  
-  /*** barcode formats ***/
-  
-  // const barcodeFormats = ref({
-  //   aztec: false,
-  //   code_128: false,
-  //   code_39: false,
-  //   code_93: false,
-  //   codabar: false,
-  //   databar: false,
-  //   databar_expanded: false,
-  //   data_matrix: false,
-  //   dx_film_edge: false,
-  //   ean_13: false,
-  //   ean_8: false,
-  //   itf: false,
-  //   maxi_code: false,
-  //   micro_qr_code: false,
-  //   pdf417: false,
-  //   qr_code: true,
-  //   rm_qr_code: false,
-  //   upc_a: false,
-  //   upc_e: false,
-  //   linear_codes: false,
-  //   matrix_codes: false
-  // })
-  // const selectedBarcodeFormats = computed(() => {
-  //   return Object.keys(barcodeFormats.value).filter((format) => barcodeFormats.value[format])
-  // })
-  
+
   /*** error handling ***/
   
   const error = ref('')
@@ -169,5 +184,34 @@ import { ref, computed } from 'vue'
   .qrcode-stream{
     width :100%;
     height:1/4;
+  }
+
+  .button:forcus {
+    border-color: transparent;
+  }
+
+  .back {
+    position:absolute;
+    top: 0;
+    left: 0;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin: 5%;
+    margin-top: 10%; 
+  }
+  .card-content {
+    /* display: flex; */
+    align-items: center;
+    justify-content: center;
+    width: 100%;
   }
   </style>

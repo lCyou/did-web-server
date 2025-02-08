@@ -8,7 +8,7 @@ import 'primeicons/primeicons.css';
         <ul class="nav-links">
           <li>
             <router-link
-                to="/wallet"
+                to="/"
                 v-slot="{ href, route, navigate, isActive, isExactActive }"
             >
                 <!-- <NavLink :active="isActive" :href="href" @click="navigate"> -->
@@ -66,6 +66,7 @@ import 'primeicons/primeicons.css';
     position: fixed;
     bottom: 0;
     width: 100%;
+    z-index: 100;
   }
   
   .container {
