@@ -39,7 +39,7 @@ watch(
         <h2 v-if="isAvailable && !isClick">Step3. Verify your DID document</h2>
         <h2 v-else style="color:darkgray">Step3. Done</h2>
 
-        <button type="button" v-bind:disabled="isClick" @click="verifyDoc">Verify</button>
+        <button v-if="isAvailable && !isClick" type="button" v-bind:disabled="isClick" @click="verifyDoc">Verify</button>
         <pre>{{ printStatus }}</pre>
     </div>
     

@@ -48,7 +48,7 @@ watch(
         <h2 v-if="isAvailable && !isClick">Step2. Publish your DID document</h2>
         <h2 v-else style="color:darkgray">Step2. Done</h2>
 
-        <button type="button" v-bind:disabled="isClick"  @click="publishDocument">Publish</button>
+        <button v-if="isAvailable && !isClick" type="button" v-bind:disabled="isClick"  @click="publishDocument">Publish</button>
         <pre>{{ printStatus }}</pre>
     </div>
     
